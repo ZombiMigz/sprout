@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "980098642909",
+    "project_id": "sprout-7f63c",
+    "storage_bucket": "sprout-7f63c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980098642909:android:17f3a049bf39d3934abc34",
+        "android_client_info": {
+          "package_name": "me.lucianolim.sprout"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "980098642909-r7slcmmk69n47upo4jfaf4alitggen60.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsmuNgIxFVmiBkr8y0o3hqLu0ip4lAXnk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "980098642909-r7slcmmk69n47upo4jfaf4alitggen60.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "980098642909-7fk2rt6cop3ocainlltl6rg5o2jh5vae.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "me.lucianolim.sprout"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
