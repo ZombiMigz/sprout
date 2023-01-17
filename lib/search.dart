@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sprout/firestore.dart';
 
 class Search extends StatefulWidget {
-  const Search({super.key});
+  final String searchKey;
+  final Function setSearchKey;
+  const Search(this.searchKey, this.setSearchKey, {super.key});
 
   @override
   State<Search> createState() => _SearchState();
@@ -13,18 +15,28 @@ class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
-    PlantList.instance
-        .getSuggestions()
-        .then((res) => debugPrint(res.toString()));
     return FutureBuilder(
         future: _suggestions,
         builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
           if (snapshot.hasData) {
-            return Autocomplete<String>(optionsBuilder: (TextEditingValue val) {
-              if (val.text == '') return [];
-              return snapshot.data!.where((name) =>
-                  name.toLowerCase().contains(val.text.toLowerCase()));
-            });
+            return Container(
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.black)),
+                child: Autocomplete<String>(
+                  fieldViewBuilder: ((context, textEditingController, focusNode,
+                          onFieldSubmitted) =>
+                      TextFormField(
+                        decoration:
+                            const InputDecoration(hintText: 'Search Here...'),
+                        onChanged: (value) => widget.setSearchKey(value),
+                      )),
+                  initialValue: TextEditingValue(text: widget.searchKey),
+                  optionsBuilder: (TextEditingValue val) {
+                    if (val.text == '') return [];
+                    return snapshot.data!.where((name) =>
+                        name.toLowerCase().contains(val.text.toLowerCase()));
+                  },
+                ));
           }
           return const SizedBox.shrink();
         });

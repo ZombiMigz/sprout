@@ -17,9 +17,20 @@ class PlantList {
     if (_plantCache != null) return _plantCache!;
     final query = await FirebaseFirestore.instance.collection("plants").get();
 
-    return query.docs.map((q) {
+    var list = query.docs.map((q) {
       return q.data();
     }).toList();
+    list.sort((a, b) {
+      return (a["Common name"]?[0] ??
+              a["Latin name"] ??
+              a["Other names"][0] ??
+              "ZZZ")
+          .compareTo((b["Common name"]?[0] ??
+              b["Latin name"] ??
+              b["Other names"][0] ??
+              "ZZZ"));
+    });
+    return list;
   }
 
   Future<List<String>> getSuggestions() async {
@@ -36,7 +47,6 @@ class PlantList {
     }
 
     for (var plant in plants) {
-      add(plant, "Common name (fr.)");
       add(plant, "Common name");
       add(plant, "Latin name");
       add(plant, "Other names");
