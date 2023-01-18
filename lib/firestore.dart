@@ -1,37 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
-class PlantList {
-  static PlantList? _instance;
+class DB {
+  static DB? _instance;
 
-  static PlantList get instance {
+  static DB get instance {
     if (_instance == null) {
-      _instance = PlantList();
+      _instance = DB();
       return _instance!;
     }
     return _instance!;
   }
 
   List<Map<String, dynamic>>? _plantCache;
-
-  Future<List<Map<String, dynamic>>> getPlants() async {
-    if (_plantCache != null) return _plantCache!;
-    final query = await FirebaseFirestore.instance.collection("plants").get();
-
-    var list = query.docs.map((q) {
-      return q.data();
-    }).toList();
-    list.sort((a, b) {
-      return (a["Common name"]?[0] ??
-              a["Latin name"] ??
-              a["Other names"][0] ??
-              "ZZZ")
-          .compareTo((b["Common name"]?[0] ??
-              b["Latin name"] ??
-              b["Other names"][0] ??
-              "ZZZ"));
-    });
-    return list;
-  }
 
   Future<List<String>> getSuggestions() async {
     final plants = await getPlants();
@@ -52,5 +34,70 @@ class PlantList {
       add(plant, "Other names");
     }
     return suggestions;
+  }
+
+  Future<List<Map<String, dynamic>>> getPlants() async {
+    if (_plantCache != null) return _plantCache!;
+    final query = await FirebaseFirestore.instance.collection("plants").get();
+
+    var list = await Future.wait(query.docs.map((q) async {
+      var plant = q.data();
+      plant["likes"] = (await FirebaseFirestore.instance
+              .collection("favorites")
+              .where("plantId", isEqualTo: q.reference.id)
+              .get())
+          .docs
+          .length;
+      return plant;
+    }).toList());
+
+    list.sort((a, b) {
+      return (a["Common name"]?[0] ??
+              a["Latin name"] ??
+              a["Other names"][0] ??
+              "ZZZ")
+          .compareTo((b["Common name"]?[0] ??
+              b["Latin name"] ??
+              b["Other names"][0] ??
+              "ZZZ"));
+    });
+    return list;
+  }
+
+  Future<Set<String>> getFavorites() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return {};
+    final items = (await FirebaseFirestore.instance
+            .collection("favorites")
+            .where("userId", isEqualTo: uid)
+            .get())
+        .docs
+        .map((e) {
+      return e.data()["plantId"] as String;
+    }).toList();
+    debugPrint(items.toString());
+    return <String>{...items};
+  }
+
+  Future<void> like(String plantId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    var like = await FirebaseFirestore.instance
+        .collection("favorites")
+        .where("userId", isEqualTo: uid)
+        .where("plantId", isEqualTo: plantId)
+        .limit(1)
+        .get();
+    if (like.docs.length == 1) {
+      await FirebaseFirestore.instance
+          .collection("favorites")
+          .doc(like.docs[0].id)
+          .delete();
+    } else {
+      await FirebaseFirestore.instance
+          .collection("favorites")
+          .add({"plantId": plantId, "userId": uid});
+    }
+    return;
   }
 }
